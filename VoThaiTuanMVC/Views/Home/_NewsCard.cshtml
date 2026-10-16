@@ -1,0 +1,25 @@
+@model BusinessObjects.Entities.NewsArticle
+@functions {
+    string G(short? id) => "g" + ((id ?? 0) % 6);
+    string Initial(string? name)
+    {
+        var s = (name ?? "F").Trim();
+        return s.Length == 0 ? "F" : s.Substring(0, 1).ToUpper();
+    }
+}
+
+<article class="news-card">
+    <a asp-action="Details" asp-route-id="@Model.NewsArticleId" class="thumb @G(Model.CategoryId)">
+        <span class="cat-label">@Model.Category?.CategoryName</span>
+        <span class="thumb-mark">@Initial(Model.Category?.CategoryName)</span>
+    </a>
+    <div class="body">
+        <h3><a asp-action="Details" asp-route-id="@Model.NewsArticleId">@Model.NewsTitle</a></h3>
+        <p class="excerpt">@Model.Headline</p>
+        <div class="meta">
+            <span>@Model.CreatedDate?.ToString("dd MMM yyyy")</span>
+            <span class="dot"></span>
+            <span>By @Model.CreatedBy?.AccountName</span>
+        </div>
+    </div>
+</article>

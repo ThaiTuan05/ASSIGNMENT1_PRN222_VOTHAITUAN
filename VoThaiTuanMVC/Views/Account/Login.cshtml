@@ -1,0 +1,39 @@
+@model VoThaiTuanMVC.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-side">
+            <span class="brand-mark">FU</span>
+            <h2>Welcome back to FU News</h2>
+            <p class="mb-0">Sign in to manage accounts, categories and news articles, or just keep reading the latest campus stories.</p>
+        </div>
+        <div class="auth-form">
+            <h3 class="mb-1">Sign in</h3>
+            <p class="text-muted small mb-4">Use your FU News account credentials.</p>
+            <form asp-controller="Account" asp-action="Login" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" autofocus />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2">Sign in</button>
+            </form>
+            <div class="text-center mt-3">
+                <a asp-controller="Home" asp-action="Index" class="small">Continue as guest &mdash; read the news &raquo;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

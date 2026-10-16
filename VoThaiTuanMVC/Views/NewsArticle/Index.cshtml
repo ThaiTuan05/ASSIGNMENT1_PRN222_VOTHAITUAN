@@ -1,0 +1,258 @@
+@model VoThaiTuanMVC.Models.NewsIndexViewModel
+@{
+    ViewData["Title"] = "Manage News";
+    var formAction = Model.OpenModal == "edit" ? "Edit" : "Create";
+    var formTagIds = Model.Form.TagIds ?? new List<int>();
+}
+
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Content</span>
+        <h2>Manage News Articles</h2>
+        <p class="sub">Publish, edit and attach tags to news articles.</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formModal" data-mode="create">
+        + New Article
+    </button>
+</div>
+
+<form method="get" asp-action="Index" class="searchbar">
+    <input type="text" name="search" value="@Model.Search" class="form-control" style="flex:1;min-width:220px;" placeholder="Search news..." />
+    <select name="categoryId" class="form-select" style="max-width:220px;">
+        <option value="">All categories</option>
+        @foreach (var c in Model.Categories)
+        {
+            if (Model.CategoryId == c.CategoryId)
+            {
+                <option value="@c.CategoryId" selected>@c.CategoryName</option>
+            }
+            else
+            {
+                <option value="@c.CategoryId">@c.CategoryName</option>
+            }
+        }
+    </select>
+    <button type="submit" class="btn btn-dark px-4">Search</button>
+</form>
+
+<div class="table-card">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Tags</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th style="width:210px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.NewsArticles.Any())
+            {
+                <tr><td colspan="7" class="text-center text-muted py-4">No news article found.</td></tr>
+            }
+            @foreach (var news in Model.NewsArticles)
+            {
+                <tr>
+                    <td>@news.NewsArticleId</td>
+                    <td class="cell-title">@news.NewsTitle</td>
+                    <td>@news.Category?.CategoryName</td>
+                    <td>
+                        @foreach (var tag in news.Tags)
+                        {
+                            <span class="badge-soft badge-tag">#@tag.TagName</span>
+                        }
+                    </td>
+                    <td>
+                        @if (news.NewsStatus == true)
+                        {
+                            <span class="badge-soft badge-active">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge-soft badge-inactive">Inactive</span>
+                        }
+                    </td>
+                    <td>@(news.CreatedDate?.ToString("dd/MM/yyyy"))</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@news.NewsArticleId" class="btn btn-sm btn-ghost">View</a>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                data-bs-toggle="modal" data-bs-target="#formModal" data-mode="edit"
+                                data-id="@news.NewsArticleId"
+                                data-title="@news.NewsTitle"
+                                data-headline="@news.Headline"
+                                data-content="@news.NewsContent"
+                                data-source="@news.NewsSource"
+                                data-category="@news.CategoryId"
+                                data-status="@(news.NewsStatus == true ? "true" : "false")"
+                                data-tags="@string.Join(",", news.Tags.Select(t => t.TagId))">
+                            Edit
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                data-id="@news.NewsArticleId"
+                                data-title="@news.NewsTitle">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Create / Edit popup dialog -->
+<div class="modal fade" id="formModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="entityForm" method="post" asp-action="@formAction">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="formModalLabel">@(Model.OpenModal == "edit" ? "Edit News Article" : "New News Article")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="All" class="text-danger mb-2"></div>
+                    <input type="hidden" id="NewsArticleId" name="NewsArticleId" value="@Model.Form.NewsArticleId" />
+                    <div class="mb-3">
+                        <label class="form-label" for="NewsTitle">News Title</label>
+                        <input class="form-control" id="NewsTitle" name="NewsTitle" value="@Model.Form.NewsTitle" required maxlength="400" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="Headline">Headline</label>
+                        <input class="form-control" id="Headline" name="Headline" value="@Model.Form.Headline" required maxlength="150" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="NewsContent">Content</label>
+                        <textarea class="form-control" id="NewsContent" name="NewsContent" rows="5" maxlength="4000">@Model.Form.NewsContent</textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="NewsSource">Source</label>
+                            <input class="form-control" id="NewsSource" name="NewsSource" value="@Model.Form.NewsSource" maxlength="400" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="CategoryId">Category</label>
+                            <select class="form-select" id="CategoryId" name="CategoryId">
+                                <option value="">-- Select category --</option>
+                                @foreach (var c in Model.Categories)
+                                {
+                                    if (Model.Form.CategoryId == c.CategoryId)
+                                    {
+                                        <option value="@c.CategoryId" selected>@c.CategoryName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@c.CategoryId">@c.CategoryName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-block">Tags</label>
+                        @foreach (var tag in Model.Tags)
+                        {
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="TagIds" id="tag_@tag.TagId" value="@tag.TagId"
+                                       @(formTagIds.Contains(tag.TagId) ? "checked" : "") />
+                                <label class="form-check-label" for="tag_@tag.TagId">@tag.TagName</label>
+                            </div>
+                        }
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="NewsStatus" name="NewsStatus" value="true" @(Model.Form.NewsStatus ? "checked" : "") />
+                        <input type="hidden" name="NewsStatus" value="false" />
+                        <label class="form-check-label" for="NewsStatus">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete confirmation -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-action="Delete">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete News Article</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="deleteId" />
+                    <p>Are you sure you want to delete news <strong id="deleteName"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var editAction = '@Url.Action("Edit", "NewsArticle")';
+            var createAction = '@Url.Action("Create", "NewsArticle")';
+            var form = document.getElementById('entityForm');
+            var formModal = document.getElementById('formModal');
+
+            function setTags(csv) {
+                var ids = (csv || '').split(',').filter(function (x) { return x.length > 0; });
+                document.querySelectorAll('input[name="TagIds"]').forEach(function (cb) {
+                    cb.checked = ids.indexOf(cb.value) !== -1;
+                });
+            }
+
+            formModal.addEventListener('show.bs.modal', function (event) {
+                var btn = event.relatedTarget;
+                if (!btn) return;
+                if (btn.dataset.mode === 'edit') {
+                    document.getElementById('formModalLabel').textContent = 'Edit News Article';
+                    form.action = editAction;
+                    document.getElementById('NewsArticleId').value = btn.dataset.id;
+                    document.getElementById('NewsTitle').value = btn.dataset.title;
+                    document.getElementById('Headline').value = btn.dataset.headline;
+                    document.getElementById('NewsContent').value = btn.dataset.content;
+                    document.getElementById('NewsSource').value = btn.dataset.source;
+                    document.getElementById('CategoryId').value = btn.dataset.category || '';
+                    document.getElementById('NewsStatus').checked = btn.dataset.status === 'true';
+                    setTags(btn.dataset.tags);
+                } else {
+                    document.getElementById('formModalLabel').textContent = 'New News Article';
+                    form.action = createAction;
+                    form.reset();
+                    document.getElementById('NewsArticleId').value = '';
+                    document.getElementById('NewsStatus').checked = true;
+                    setTags('');
+                }
+            });
+
+            var deleteModal = document.getElementById('deleteModal');
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                var btn = event.relatedTarget;
+                document.getElementById('deleteId').value = btn.dataset.id;
+                document.getElementById('deleteName').textContent = btn.dataset.title;
+            });
+
+            @if (Model.OpenModal != null)
+            {
+                <text>
+                (function () {
+                    var m = new bootstrap.Modal(formModal);
+                    m.show();
+                })();
+                </text>
+            }
+        })();
+    </script>
+}

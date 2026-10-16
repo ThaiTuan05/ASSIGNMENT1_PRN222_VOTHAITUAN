@@ -1,0 +1,187 @@
+@model VoThaiTuanMVC.Models.AccountIndexViewModel
+@using BusinessObjects.Common
+@{
+    ViewData["Title"] = "Manage Accounts";
+    var formAction = Model.OpenModal == "edit" ? "Edit" : "Create";
+}
+
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Administration</span>
+        <h2>Manage Accounts</h2>
+        <p class="sub">Create, update and remove system accounts.</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formModal" data-mode="create">
+        + New Account
+    </button>
+</div>
+
+<form method="get" asp-action="Index" class="searchbar">
+    <input type="text" name="search" value="@Model.Search" class="form-control" style="flex:1;min-width:240px;" placeholder="Search by name or email..." />
+    <button type="submit" class="btn btn-dark px-4">Search</button>
+</form>
+
+<div class="table-card">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th style="width:170px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Accounts.Any())
+            {
+                <tr><td colspan="5" class="text-center text-muted py-4">No account found.</td></tr>
+            }
+            @foreach (var account in Model.Accounts)
+            {
+                <tr>
+                    <td>@account.AccountId</td>
+                    <td class="cell-title">@account.AccountName</td>
+                    <td>@account.AccountEmail</td>
+                    <td><span class="badge-soft badge-role">@Roles.GetRoleName(account.AccountRole)</span></td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                data-bs-toggle="modal" data-bs-target="#formModal" data-mode="edit"
+                                data-id="@account.AccountId"
+                                data-name="@account.AccountName"
+                                data-email="@account.AccountEmail"
+                                data-role="@account.AccountRole"
+                                data-password="@account.AccountPassword">
+                            Edit
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                data-id="@account.AccountId"
+                                data-name="@account.AccountName">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Create / Edit popup dialog -->
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="entityForm" method="post" asp-action="@formAction">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="formModalLabel">@(Model.OpenModal == "edit" ? "Edit Account" : "New Account")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="All" class="text-danger mb-2"></div>
+                    <input type="hidden" id="AccountId" name="AccountId" value="@Model.Form.AccountId" />
+                    <div class="mb-3">
+                        <label class="form-label" for="AccountName">Name</label>
+                        <input class="form-control" id="AccountName" name="AccountName" value="@Model.Form.AccountName" required maxlength="100" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="AccountEmail">Email</label>
+                        <input class="form-control" id="AccountEmail" name="AccountEmail" type="email" value="@Model.Form.AccountEmail" required maxlength="70" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="AccountRole">Role</label>
+                        <select class="form-select" id="AccountRole" name="AccountRole" required>
+                            @if (Model.Form.AccountRole == Roles.Lecturer)
+                            {
+                                <option value="1">Staff</option>
+                                <option value="2" selected>Lecturer</option>
+                            }
+                            else
+                            {
+                                <option value="1" selected>Staff</option>
+                                <option value="2">Lecturer</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="AccountPassword">Password</label>
+                        <input class="form-control" id="AccountPassword" name="AccountPassword" value="@Model.Form.AccountPassword" required maxlength="70" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete confirmation -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-action="Delete">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="deleteId" />
+                    <p>Are you sure you want to delete account <strong id="deleteName"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var editAction = '@Url.Action("Edit", "SystemAccount")';
+            var createAction = '@Url.Action("Create", "SystemAccount")';
+            var form = document.getElementById('entityForm');
+            var formModal = document.getElementById('formModal');
+
+            formModal.addEventListener('show.bs.modal', function (event) {
+                var btn = event.relatedTarget;
+                if (!btn) return;
+                if (btn.dataset.mode === 'edit') {
+                    document.getElementById('formModalLabel').textContent = 'Edit Account';
+                    form.action = editAction;
+                    document.getElementById('AccountId').value = btn.dataset.id;
+                    document.getElementById('AccountName').value = btn.dataset.name;
+                    document.getElementById('AccountEmail').value = btn.dataset.email;
+                    document.getElementById('AccountRole').value = btn.dataset.role;
+                    document.getElementById('AccountPassword').value = btn.dataset.password;
+                } else {
+                    document.getElementById('formModalLabel').textContent = 'New Account';
+                    form.action = createAction;
+                    form.reset();
+                    document.getElementById('AccountId').value = '0';
+                    document.getElementById('AccountRole').value = '1';
+                }
+            });
+
+            var deleteModal = document.getElementById('deleteModal');
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                var btn = event.relatedTarget;
+                document.getElementById('deleteId').value = btn.dataset.id;
+                document.getElementById('deleteName').textContent = btn.dataset.name;
+            });
+
+            @if (Model.OpenModal != null)
+            {
+                <text>
+                (function () {
+                    var m = new bootstrap.Modal(formModal);
+                    m.show();
+                })();
+                </text>
+            }
+        })();
+    </script>
+}

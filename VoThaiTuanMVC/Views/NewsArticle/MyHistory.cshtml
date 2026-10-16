@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "My News History";
+    var history = ViewBag.History as List<BusinessObjects.Entities.NewsArticle> ?? new();
+}
+
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Staff</span>
+        <h2>My News History</h2>
+        <p class="sub">All news articles you have created.</p>
+    </div>
+</div>
+
+<div class="table-card">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Modified</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!history.Any())
+            {
+                <tr><td colspan="7" class="text-center text-muted py-4">You have not created any news article yet.</td></tr>
+            }
+            @foreach (var news in history)
+            {
+                <tr>
+                    <td>@news.NewsArticleId</td>
+                    <td class="cell-title">@news.NewsTitle</td>
+                    <td>@news.Category?.CategoryName</td>
+                    <td>
+                        @if (news.NewsStatus == true)
+                        {
+                            <span class="badge-soft badge-active">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge-soft badge-inactive">Inactive</span>
+                        }
+                    </td>
+                    <td>@(news.CreatedDate?.ToString("dd/MM/yyyy HH:mm"))</td>
+                    <td>@(news.ModifiedDate?.ToString("dd/MM/yyyy HH:mm"))</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@news.NewsArticleId" class="btn btn-sm btn-ghost">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

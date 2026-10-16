@@ -1,0 +1,87 @@
+@model VoThaiTuanMVC.Models.ReportViewModel
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Administration</span>
+        <h2>Statistic Report</h2>
+        <p class="sub">News articles created between two dates, newest first.</p>
+    </div>
+</div>
+
+<form method="post" asp-action="Index" class="card-surface p-4 mb-4">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+    <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label asp-for="StartDate" class="form-label"></label>
+            <input asp-for="StartDate" class="form-control" type="date" />
+            <span asp-validation-for="StartDate" class="text-danger small"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="EndDate" class="form-label"></label>
+            <input asp-for="EndDate" class="form-control" type="date" />
+            <span asp-validation-for="EndDate" class="text-danger small"></span>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary px-4">Generate report</button>
+        </div>
+    </div>
+</form>
+
+@if (Model.Searched)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="widget mb-0">
+                <div class="text-muted small text-uppercase" style="letter-spacing:.12em;">Total articles</div>
+                <div class="display-serif" style="font-size:2.4rem;line-height:1.1;">@Model.TotalArticles</div>
+                <div class="text-muted small">
+                    @Model.StartDate?.ToString("dd/MM/yyyy") &rarr; @Model.EndDate?.ToString("dd/MM/yyyy")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Created By</th>
+                    <th>Created Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Results.Any())
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4">No news article in this period.</td></tr>
+                }
+                @foreach (var news in Model.Results)
+                {
+                    <tr>
+                        <td>@news.NewsArticleId</td>
+                        <td class="cell-title">@news.NewsTitle</td>
+                        <td>@news.Category?.CategoryName</td>
+                        <td>@news.CreatedBy?.AccountName</td>
+                        <td>@news.CreatedDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            @if (news.NewsStatus == true)
+                            {
+                                <span class="badge-soft badge-active">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge-soft badge-inactive">Inactive</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

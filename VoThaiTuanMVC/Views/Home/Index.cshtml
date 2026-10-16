@@ -1,0 +1,140 @@
+﻿@model VoThaiTuanMVC.Models.HomeIndexViewModel
+@{
+    ViewData["Title"] = "News";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+    <div>
+        <span class="eyebrow" style="color:var(--accent);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;font-weight:700;">Campus Newsroom</span>
+        <h2 class="mb-0">Top Stories</h2>
+    </div>
+</div>
+
+<form method="get" asp-action="Index" class="searchbar">
+    <input type="text" name="search" value="@Model.Search" class="form-control" list="newsTitles" autocomplete="off"
+           style="flex:1;min-width:240px;" placeholder="Search news by title, headline or content..." />
+    <datalist id="newsTitles">
+        @foreach (var title in Model.TitleSuggestions)
+        {
+            <option value="@title"></option>
+        }
+    </datalist>
+    <select name="categoryId" class="form-select" style="max-width:230px;">
+        <option value="">All categories</option>
+        @foreach (var c in Model.Categories)
+        {
+            if (Model.CategoryId == c.CategoryId)
+            {
+                <option value="@c.CategoryId" selected>@c.CategoryName</option>
+            }
+            else
+            {
+                <option value="@c.CategoryId">@c.CategoryName</option>
+            }
+        }
+    </select>
+    <button type="submit" class="btn btn-primary px-4">Search</button>
+</form>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        @if (!Model.Articles.Any())
+        {
+            <div class="empty-state">
+                <div class="es-mark">&#9670;</div>
+                <h4>No articles found</h4>
+                @if (!string.IsNullOrWhiteSpace(Model.Search))
+                {
+                    <p>No result for <strong>&ldquo;@Model.Search&rdquo;</strong>. Try another keyword or category.</p>
+                }
+                else
+                {
+                    <p>Try a different keyword or category.</p>
+                }
+                <a asp-action="Index" class="btn btn-ghost btn-sm mt-2">Clear search</a>
+            </div>
+
+            @if (Model.Suggestions.Any())
+            {
+                <h2 class="section-title">You might be interested in</h2>
+                <div class="news-grid">
+                    @foreach (var item in Model.Suggestions)
+                    {
+                        <partial name="_NewsCard" model="item" />
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            @if (Model.Featured != null)
+            {
+                <a class="hero" asp-action="Details" asp-route-id="@Model.Featured.NewsArticleId">
+                    <span class="hero-bg"></span>
+                    <span class="hero-body d-block">
+                        <span class="kicker">@Model.Featured.Category?.CategoryName</span>
+                        <h1>@Model.Featured.NewsTitle</h1>
+                        <p class="lead">@Model.Featured.Headline</p>
+                        <div class="byline">
+                            By <strong>@Model.Featured.CreatedBy?.AccountName</strong>
+                            &middot; @Model.Featured.CreatedDate?.ToString("dd MMMM yyyy")
+                        </div>
+                    </span>
+                </a>
+            }
+
+            @if (Model.Rest.Any())
+            {
+                <h2 class="section-title">Latest Stories</h2>
+                <div class="news-grid">
+                    @foreach (var item in Model.Rest)
+                    {
+                        <partial name="_NewsCard" model="item" />
+                    }
+                </div>
+            }
+
+            @if (Model.IsSearching && Model.Suggestions.Any())
+            {
+                <h2 class="section-title mt-4">You might also like</h2>
+                <div class="news-grid">
+                    @foreach (var item in Model.Suggestions)
+                    {
+                        <partial name="_NewsCard" model="item" />
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    <aside class="col-lg-4">
+        <div class="widget">
+            <h4>Browse by Category</h4>
+            <ul class="cat-list">
+                @foreach (var c in Model.Categories)
+                {
+                    var count = Model.CategoryCounts.TryGetValue(c.CategoryId, out var n) ? n : 0;
+                    <li>
+                        <a asp-action="Index" asp-route-categoryId="@c.CategoryId">
+                            <span>@c.CategoryName</span>
+                            <span class="count">@count</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+
+        @if (Model.Tags.Any())
+        {
+            <div class="widget">
+                <h4>Popular Tags</h4>
+                <div class="chip-list">
+                    @foreach (var tag in Model.Tags)
+                    {
+                        <a class="chip" asp-action="Index" asp-route-search="@tag.TagName">#@tag.TagName</a>
+                    }
+                </div>
+            </div>
+        }
+    </aside>
+</div>

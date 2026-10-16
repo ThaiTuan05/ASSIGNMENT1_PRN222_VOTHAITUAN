@@ -1,0 +1,23 @@
+# Normalize line endings: check in LF, check out native (CRLF on Windows)
+* text=auto
+
+*.cs        text diff=csharp
+*.cshtml    text diff=html
+*.csproj    text
+*.sln       text eol=crlf
+*.json      text
+*.css       text
+*.js        text
+*.md        text
+*.sql       text
+
+# Binary assets
+*.ico       binary
+*.png       binary
+*.jpg       binary
+*.gif       binary
+*.woff      binary
+*.woff2     binary
+*.ttf       binary
+*.eot       binary
+*.map       binary

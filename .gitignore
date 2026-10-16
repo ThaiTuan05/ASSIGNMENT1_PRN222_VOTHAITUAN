@@ -1,0 +1,50 @@
+## Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.dll
+*.pdb
+*.exe
+*.user
+*.suo
+
+## Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.userprefs
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+!packages/build/
+
+## Secrets & machine-specific config
+appsettings.Local.json
+appsettings.*.Local.json
+*.user
+.env
+
+## Database script - lecturer provides FUNewsManagement DB, not part of submission
+Database/
+
+## Logs & temp
+*.log
+*.tmp
+*.bak
+*.cache
+.vs/
+TestResults/
+[Cc]overage*/
+*.trx
+
+## OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## NOTE: wwwroot/lib (bootstrap, jquery...) is intentionally NOT ignored.
+## The layout references ~/lib/... and there is no .libman.json to restore them,
+## so these files must be committed for the project to run after cloning.

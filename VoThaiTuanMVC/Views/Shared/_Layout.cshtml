@@ -1,0 +1,129 @@
+﻿@using BusinessObjects.Common
+@{
+    var role = Context.Session.GetInt32("UserRole");
+    var userName = Context.Session.GetString("UserName");
+    var isAuthenticated = role.HasValue;
+    var controller = (ViewContext.RouteData.Values["controller"] as string ?? "").ToLower();
+    var action = (ViewContext.RouteData.Values["action"] as string ?? "").ToLower();
+    string Active(string c, params string[] actions)
+    {
+        if (controller != c.ToLower()) return "";
+        if (actions.Length == 0) return "active";
+        foreach (var a in actions)
+        {
+            if (a.ToLower() == action) return "active";
+        }
+        return "";
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FUNewsManagementSystem</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="topbar">
+        <div class="container">
+            <span>@DateTime.Now.ToString("dddd, dd MMMM yyyy") &middot; FUNews Management System</span>
+            <span>
+                @if (isAuthenticated)
+                {
+                    <span>Signed in as <strong>@userName</strong></span>
+                    <span class="divider">|</span>
+                    <a asp-controller="Account" asp-action="Logout">Sign out</a>
+                }
+                else
+                {
+                    <span>Read the news without signing in</span>
+                    <span class="divider">|</span>
+                    <a asp-controller="Account" asp-action="Login">Sign in</a>
+                }
+            </span>
+        </div>
+    </div>
+
+    <header class="masthead">
+        <div class="container">
+            <a class="brand" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark">FU</span>
+                <span class="brand-text">FU News<small>Management System</small></span>
+            </a>
+            <div class="masthead-actions">
+                @if (isAuthenticated)
+                {
+                    <div class="user-chip">
+                        <span class="avatar">@(string.IsNullOrEmpty(userName) ? "U" : userName.Substring(0, 1).ToUpper())</span>
+                        <span class="meta">
+                            <strong>@userName</strong>
+                            <span>@Roles.GetRoleName(role)</span>
+                        </span>
+                    </div>
+                }
+                else
+                {
+                    <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Login">Sign in</a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <nav class="mainnav">
+        <div class="container">
+            <ul>
+                <li><a class="@Active("Home", "Index", "Details")" asp-controller="Home" asp-action="Index">News</a></li>
+                @if (role == Roles.Admin)
+                {
+                    <li><a class="@Active("SystemAccount", "Index", "Create", "Edit", "Delete")" asp-controller="SystemAccount" asp-action="Index">Accounts</a></li>
+                    <li><a class="@Active("Report", "Index")" asp-controller="Report" asp-action="Index">Reports</a></li>
+                }
+                @if (role == Roles.Staff)
+                {
+                    <li><a class="@Active("Category", "Index", "Create", "Edit", "Delete")" asp-controller="Category" asp-action="Index">Categories</a></li>
+                    <li><a class="@Active("NewsArticle", "Index", "Details", "Create", "Edit", "Delete")" asp-controller="NewsArticle" asp-action="Index">News Articles</a></li>
+                    <li><a class="@Active("NewsArticle", "MyHistory")" asp-controller="NewsArticle" asp-action="MyHistory">My History</a></li>
+                    <li><a class="@Active("Account", "Profile")" asp-controller="Account" asp-action="Profile">Profile</a></li>
+                }
+            </ul>
+        </div>
+    </nav>
+
+    <main role="main" class="site-main container">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div>
+                <strong>FU News</strong> &mdash; News Management System
+                <div class="small">PRN222 Assignment 01 &middot; VoThaiTuan - QE190154</div>
+            </div>
+            <div class="small">
+                &copy; @DateTime.Now.Year FUNewsManagementSystem. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,49 @@
+@model BusinessObjects.Entities.SystemAccount
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Staff</span>
+        <h2>My Profile</h2>
+        <p class="sub">Update your account information.</p>
+    </div>
+</div>
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">@ViewBag.Message</div>
+}
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card-surface p-4">
+            <form method="post" asp-action="Profile">
+                <div asp-validation-summary="All" class="text-danger mb-2"></div>
+                <input type="hidden" asp-for="AccountId" />
+                <input type="hidden" asp-for="AccountRole" />
+                <div class="mb-3">
+                    <label asp-for="AccountName" class="form-label">Name</label>
+                    <input asp-for="AccountName" class="form-control" />
+                    <span asp-validation-for="AccountName" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="AccountEmail" class="form-label">Email</label>
+                    <input asp-for="AccountEmail" class="form-control" />
+                    <span asp-validation-for="AccountEmail" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="AccountPassword" class="form-label">Password</label>
+                    <input asp-for="AccountPassword" class="form-control" />
+                    <span asp-validation-for="AccountPassword" class="text-danger small"></span>
+                </div>
+                <button type="submit" class="btn btn-primary px-4">Update profile</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
